@@ -8,7 +8,7 @@ class Network:
         self.layers = layers
 
     def forward_pass(self, data=np.random.randn(3, 5) * 10):
-
+        '''forward pass of network calls forward pass of each layer and returns final output'''
         output = data
         for layer in self.layers:
             output = layer.forward_pass(output)
