@@ -23,12 +23,12 @@ class Layer(ABC):
 
 
 class HiddenLayer(Layer):
-    def forward_pass(self, inputs) -> NDArray[np.float64]:
+    def forward_pass(self, inputs):
         '''for hidden layers we create weights and biases and calculate the output from these'''
         self.weights = np.random.randn(inputs.shape[1], self.size) * 0.01
         self.biases = np.zeros(self.size)
 
-        outputs = []
+        outputs =[]
         for case in inputs:
             outputs.append(
                 list(
@@ -46,7 +46,7 @@ class HiddenLayer(Layer):
 
 
 class InputLayer(Layer):
-    def forward_pass(self, inputs) -> NDArray[np.float64]:
+    def forward_pass(self, inputs):
         '''for input layers we just return the inputs'''
         return inputs
 
@@ -55,7 +55,7 @@ class InputLayer(Layer):
 
 
 class OutputLayer(Layer):
-    def forward_pass(self, inputs) -> NDArray[np.float64]:
+    def forward_pass(self, inputs):
         '''for output layers we only apply softmax (or other activation function) to the inputs'''
         outputs = np.zeros_like(inputs)
 
