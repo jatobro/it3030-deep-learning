@@ -1,17 +1,21 @@
 import numpy as np
-from functions import relu
+from functions import relu, softmax
 
 
 class Layer:
     def __init__(
-        self, layer_sizes=(5, 5), activation_function=relu, weight_deviation=0.01
+        self,
+        input_size=5,
+        size=5,
+        activation=relu,
+        is_output=False,
+        weight_deviation=0.01,
     ):
 
-        self.weights = (
-            np.random.randn(layer_sizes[0], layer_sizes[1]) * weight_deviation
-        )
-        self.biases = np.zeros(layer_sizes[0])
-        self.activation_function = activation_function
+        self.weights = np.random.randn(input_size, size) * weight_deviation
+        self.biases = np.zeros(size)
+        self.activation = activation
+        self.is_output = is_output
 
     def forward_pass(self, inputs):
         outputs = []
@@ -19,13 +23,17 @@ class Layer:
             outputs.append(
                 list(
                     map(
-                        self.activation_function,
+                        self.activation,
                         np.dot(self.weights.T, input) + self.biases,
                     )
                 )
             )
 
-        return np.array(outputs)
+        return (
+            np.array(list(map(softmax, outputs)))
+            if self.is_output
+            else np.array(outputs)
+        )
 
     def backward_pass(self):
         pass
