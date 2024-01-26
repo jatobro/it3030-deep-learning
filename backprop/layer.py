@@ -1,39 +1,65 @@
 import numpy as np
+from numpy._typing import NDArray
 from functions import relu, softmax
 
+from abc import ABC, abstractmethod
 
-class Layer:
-    def __init__(
-        self,
-        input_size=5,
-        size=5,
-        activation=relu,
-        is_output=False,
-        weight_deviation=0.01,
-    ):
 
-        self.weights = np.random.randn(input_size, size) * weight_deviation
-        self.biases = np.zeros(size)
+class Layer(ABC):
+    def __init__(self, size=5, activation=relu):
+        self.size = size
         self.activation = activation
-        self.is_output = is_output
 
-    def forward_pass(self, inputs):
+        self.weights = None
+        self.biases = None
+
+    @abstractmethod
+    def forward_pass(self, inputs) -> NDArray[np.float64]:
+        pass
+
+    @abstractmethod
+    def backward_pass(self):
+        pass
+
+
+class HiddenLayer(Layer):
+    def forward_pass(self, inputs: NDArray[np.float64]) -> NDArray[np.float64]:
+        self.weights = np.random.randn(inputs.shape[1], self.size) * 0.01
+        self.biases = np.zeros(self.size)
+
         outputs = []
-        for input in inputs:
+        for case in inputs:
             outputs.append(
                 list(
                     map(
                         self.activation,
-                        np.dot(self.weights.T, input) + self.biases,
+                        np.dot(self.weights.T, case) + self.biases,
                     )
                 )
             )
 
-        return (
-            np.array(list(map(softmax, outputs)))
-            if self.is_output
-            else np.array(outputs)
-        )
+        return np.array(outputs)
+
+    def backward_pass(self):
+        pass
+
+
+class InputLayer(Layer):
+    def forward_pass(self, inputs) -> NDArray[np.float64]:
+        return inputs
+
+    def backward_pass(self):
+        pass
+
+
+class OutputLayer(Layer):
+    def forward_pass(self, inputs) -> NDArray[np.float64]:
+        outputs = np.zeros_like(inputs)
+
+        for i, case in enumerate(inputs):
+            outputs[i] = softmax(case)
+
+        return outputs
 
     def backward_pass(self):
         pass

@@ -1,9 +1,20 @@
 from network import Network
+from layer import InputLayer, HiddenLayer, OutputLayer
 
 
 def main():
-    network = Network()
+    network = Network(
+        [
+            InputLayer(),
+            HiddenLayer(),
+            OutputLayer(),
+        ]
+    )
+
+    # training
     pred = network.forward_pass()
+    # network.backward_pass()
+
     print(pred)
 
 

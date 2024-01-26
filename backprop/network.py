@@ -4,14 +4,13 @@ from functions import softmax
 
 
 class Network:
-    def forward_pass(self, inputs=np.random.randn(3, 5) * 10):
-        hidden_layer = Layer()
-        output_layer = Layer(is_output=True)
+    def __init__(self, layers):
+        self.layers = layers
 
-        model = [hidden_layer, output_layer]
+    def forward_pass(self, data=np.random.randn(3, 5) * 10):
 
-        output = inputs
-        for layer in model:
+        output = data
+        for layer in self.layers:
             output = layer.forward_pass(output)
 
         return output
