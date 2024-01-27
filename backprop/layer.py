@@ -6,9 +6,11 @@ from abc import ABC, abstractmethod
 
 
 class Layer(ABC):
-    def __init__(self, size=5, activation=relu):
+    def __init__(self, size=5, activation=relu, weight_range=0.05, learning_rate=0.01):
         self.size = size
         self.activation = activation
+        self.weight_range = weight_range
+        self.learning_rate = learning_rate
 
         self.weights = None
         self.biases = None
@@ -24,12 +26,14 @@ class Layer(ABC):
 
 class HiddenLayer(Layer):
     def forward_pass(self, inputs):
-        '''for hidden layers we create weights and biases and calculate the output from these'''
+        """for hidden layers we create weights and biases and calculate the output from these"""
         if self.weights is None:
-            self.weights = np.random.randn(inputs.shape[1], self.size) * 0.01
+            self.weights = (
+                np.random.randn(inputs.shape[1], self.size) * self.weight_range
+            )
             self.biases = np.zeros(self.size)
 
-        outputs =[]
+        outputs = []
         for case in inputs:
             outputs.append(
                 list(
@@ -48,7 +52,7 @@ class HiddenLayer(Layer):
 
 class InputLayer(Layer):
     def forward_pass(self, inputs):
-        '''for input layers we just return the inputs'''
+        """for input layers we just return the inputs"""
         return inputs
 
     def backward_pass(self):
@@ -57,7 +61,7 @@ class InputLayer(Layer):
 
 class OutputLayer(Layer):
     def forward_pass(self, inputs):
-        '''for output layers we only apply softmax (or other activation function) to the inputs'''
+        """for output layers we only apply softmax (or other activation function) to the inputs"""
         outputs = np.zeros_like(inputs)
 
         for i, case in enumerate(inputs):
