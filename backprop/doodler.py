@@ -49,7 +49,6 @@ _doodle_image_types_ = [
 
 
 class Doodler:
-
     def __init__(
         self,
         rows=10,
@@ -279,7 +278,6 @@ class Doodler:
         return self.doodle(fill_pred=fp)
 
     def gen_bar_predicate(self, r1, c1, r2, c2):
-
         def fp_vertical(r, c):
             return abs(c - c1) <= self.bar_margin and min(r1, r2) <= r <= max(r1, r2)
 
@@ -677,7 +675,6 @@ def gen_doodle_cases(
     dbias=0.7,
     poly=(4, 5, 6),
 ):
-
     d = Doodler(
         rows=rows,
         cols=cols,
