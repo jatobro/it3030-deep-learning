@@ -11,7 +11,7 @@ def main():
             InputLayer(),
             HiddenLayer(),
             HiddenLayer(),
-            OutputLayer(),
+            OutputLayer(activation="softmax"),
         ]
     )
 

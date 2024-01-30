@@ -8,7 +8,13 @@ from abc import ABC, abstractmethod
 class Layer(ABC):
     def __init__(self, size=5, activation=relu, weight_range=0.05, learning_rate=0.01):
         self.size = size
-        self.activation = activation
+        self.activation = (
+            relu
+            if activation == "relu"
+            else softmax
+            if activation == "softmax"
+            else None
+        )
         self.weight_range = weight_range
         self.learning_rate = learning_rate
 
@@ -56,12 +62,7 @@ class InputLayer(Layer):
 class OutputLayer(Layer):
     def forward_pass(self, inputs):
         """for output layers we only apply softmax (or other activation function) to the inputs"""
-        outputs = np.zeros_like(inputs)
-
-        for i, case in enumerate(inputs):
-            outputs[i] = softmax(case)
-
-        return outputs
+        return self.activation(inputs)
 
     def backward_pass(self):
         pass
