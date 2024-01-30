@@ -26,25 +26,19 @@ class Layer(ABC):
 
 class HiddenLayer(Layer):
     def forward_pass(self, inputs):
-        """for hidden layers we create weights and biases and calculate the output from these"""
+        """for hidden layers we create weights and biases (if they dont already exist) and calculate the output from these"""
         if self.weights is None:
             self.weights = (
                 np.random.randn(inputs.shape[1], self.size) * self.weight_range
             )
             self.biases = np.zeros(self.size)
 
-        outputs = []
-        for case in inputs:
-            outputs.append(
-                list(
-                    map(
-                        self.activation,
-                        np.dot(self.weights.T, case) + self.biases,
-                    )
-                )
-            )
-
-        return np.array(outputs)
+        return np.array(
+            [
+                self.activation(np.dot(self.weights.T, case) + self.biases)
+                for case in inputs
+            ]
+        )
 
     def backward_pass(self):
         pass
