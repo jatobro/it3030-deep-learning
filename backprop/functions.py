@@ -1,13 +1,70 @@
 import numpy as np
 
+# helper functions
+
+
+def broadcast(vector, size):
+    return np.tile(vector[:, np.newaxis], (1, size))
+
+
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
+
+# loss functions and their derivatives / gradients
+
+
+def mse(x):
+    return np.mean(np.square(x))
+
+
+def d_mse(x):
+    return 2 * x
+
+
+# activations functions and their derivatives / gradients
+
 
 def relu(x):
     return np.maximum(0, x)
+
+
+def d_relu(x):
+    if x > 0:
+        return 1
+    return 0
 
 
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x))
 
 
-def clamp(n, minn, maxn):
-    return max(min(maxn, n), minn)
+def d_softmax(x):
+    s = softmax(x)
+
+    jac_m = np.diag(s)
+
+    for i in range(len(jac_m)):
+        for j in range(len(jac_m)):
+            if i == j:
+                jac_m[i][j] = s[i] * (1 - s[i])
+            else:
+                jac_m[i][j] = -1 * s[i] * s[j]
+
+    return jac_m
+
+
+def tanh(x):
+    return np.tanh(x)
+
+
+def d_tanh(x):
+    return 1 - np.tanh(x) ** 2
+
+
+def lin(x):
+    return x
+
+
+def d_lin(x):
+    return 1

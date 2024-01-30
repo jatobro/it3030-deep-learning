@@ -8,14 +8,13 @@ class Network:
         self.layers = layers
         self.outputs = []
 
-    def forward_pass(self, data=np.random.randn(3, 5) * 10):
+    def forward_pass(self, data=np.random.randn(3, 4) * 10):
         """forward pass of network calls forward pass of each layer and returns final output"""
-        input = data
         for layer in self.layers:
-            input = layer.forward_pass(input)
-            self.outputs.append(input)
+            data = layer.forward_pass(data)
+            self.outputs.append(data)
 
-        return input
+        return self.outputs[-1]
 
     def backward_pass(self):
         pass

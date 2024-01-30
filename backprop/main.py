@@ -8,9 +8,8 @@ def main():
 
     network = Network(
         [
-            InputLayer(),
-            HiddenLayer(),
-            HiddenLayer(),
+            InputLayer(size=3),
+            HiddenLayer(size=2),
             OutputLayer(activation="softmax"),
         ]
     )
