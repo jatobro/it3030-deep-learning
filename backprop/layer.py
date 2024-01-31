@@ -41,10 +41,8 @@ class HiddenLayer(Layer):
 
     def forward_pass(self, inputs):
         """for hidden layers we create weights (if they dont already exist) and calculate the output"""
-        _, input_size = inputs.shape
-
         if self.weights is None:
-            self.init_weights(input_size)
+            self.init_weights(inputs.shape[1])
 
         return self.activation(
             np.einsum("ij,jk->ik", inputs, self.weights) + self.biases
