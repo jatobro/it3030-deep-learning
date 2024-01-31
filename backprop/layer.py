@@ -46,12 +46,8 @@ class HiddenLayer(Layer):
         if self.weights is None:
             self.init_weights(input_size)
 
-        return np.array(
-            [
-                self.activation(y)
-                for y in np.dot(self.weights.T, inputs)
-                + broadcast(self.biases, batch_size)
-            ]
+        return self.activation(
+            np.dot(self.weights.T, inputs) + broadcast(self.biases, batch_size)
         )
 
     def backward_pass(self):
@@ -75,8 +71,8 @@ class OutputLayer(Layer):
         super().__init__(size, activation, learning_rate)
 
     def forward_pass(self, inputs):
-        """for output layers we only apply softmax (or other activation function) to the inputs"""
-        return np.array([self.activation(x) for x in inputs])
+        """for output layers we only apply softmax (or other activation function) to each case (each column) of the inputs"""
+        return np.apply_along_axis(self.activation, axis=0, arr=inputs)
 
     def backward_pass(self):
         pass
