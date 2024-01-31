@@ -41,14 +41,16 @@ class HiddenLayer(Layer):
 
     def forward_pass(self, inputs):
         """for hidden layers we create weights (if they dont already exist) and calculate the output"""
+        input_size, batch_size = inputs.shape
+
         if self.weights is None:
-            self.init_weights(inputs.shape[0])
+            self.init_weights(input_size)
 
         return np.array(
             [
                 self.activation(y)
                 for y in np.dot(self.weights.T, inputs)
-                + broadcast(self.biases, inputs.shape[1])
+                + broadcast(self.biases, batch_size)
             ]
         )
 

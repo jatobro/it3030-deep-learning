@@ -3,8 +3,8 @@ import numpy as np
 # helper functions
 
 
-def broadcast(vector, size):
-    return np.tile(vector[:, np.newaxis], (1, size))
+def broadcast(x, n):
+    return x.reshape(-1, 1).repeat(n, axis=1)
 
 
 def clamp(n, minn, maxn):
