@@ -7,12 +7,12 @@ import yaml
 def main():
     config = yaml.safe_load(open("./config.yml"))
 
-    data = np.random.randn(4, 5) * 10
+    data = np.random.randn(7, 5) * 10
 
     network = Network(
         [
-            InputLayer(size=4),
-            HiddenLayer(size=3),
+            InputLayer(size=data.shape[1]),
+            HiddenLayer(size=6),
             OutputLayer(activation="softmax"),
         ]
     )

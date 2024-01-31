@@ -41,13 +41,13 @@ class HiddenLayer(Layer):
 
     def forward_pass(self, inputs):
         """for hidden layers we create weights (if they dont already exist) and calculate the output"""
-        input_size, batch_size = inputs.shape
+        batch_size, input_size = inputs.shape
 
         if self.weights is None:
             self.init_weights(input_size)
 
         return self.activation(
-            np.dot(self.weights.T, inputs) + broadcast(self.biases, batch_size)
+            np.einsum("ij,jk->ik", inputs, self.weights) + self.biases
         )
 
     def backward_pass(self):
@@ -71,8 +71,8 @@ class OutputLayer(Layer):
         super().__init__(size, activation, learning_rate)
 
     def forward_pass(self, inputs):
-        """for output layers we only apply softmax (or other activation function) to each case (each column) of the inputs"""
-        return np.apply_along_axis(self.activation, axis=0, arr=inputs)
+        """for output layers we only apply softmax (or other activation function) to each case (each row) of the inputs"""
+        return np.apply_along_axis(self.activation, axis=1, arr=inputs)
 
     def backward_pass(self):
         pass
