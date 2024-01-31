@@ -41,7 +41,7 @@ class HiddenLayer(Layer):
 
     def forward_pass(self, inputs):
         """for hidden layers we create weights (if they dont already exist) and calculate the output"""
-        batch_size, input_size = inputs.shape
+        _, input_size = inputs.shape
 
         if self.weights is None:
             self.init_weights(input_size)
