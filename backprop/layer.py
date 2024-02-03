@@ -11,9 +11,7 @@ class Layer(ABC):
         self.activation = (
             relu
             if activation == "relu"
-            else softmax
-            if activation == "softmax"
-            else activation
+            else softmax if activation == "softmax" else activation
         )
 
         self.learning_rate = learning_rate
@@ -48,8 +46,9 @@ class HiddenLayer(Layer):
             np.einsum("ij,jk->ik", inputs, self.weights) + self.biases
         )
 
-    def backward_pass(self):
-        pass
+    def backward_pass(self, inputs):
+        """calculates the jacobi matrix (this layer respect to earlier layer, if first layer, respect to weights), dot this with the inputs and return the result"""
+        raise NotImplementedError
 
 
 class InputLayer(Layer):
@@ -60,7 +59,8 @@ class InputLayer(Layer):
         """for input layers we just return the inputs"""
         return inputs
 
-    def backward_pass(self):
+    def backward_pass(self, inputs):
+        """for input layers we dont do anything in the backward pass because there are no weights fed into this layer"""
         pass
 
 
@@ -72,5 +72,6 @@ class OutputLayer(Layer):
         """for output layers we only apply softmax (or other activation function) to each case (each row) of the inputs"""
         return np.apply_along_axis(self.activation, axis=1, arr=inputs)
 
-    def backward_pass(self):
-        pass
+    def backward_pass(self, inputs):
+        """calculates the softmax (maybe) jacobi matrix, dot this with the inputs and return the result"""
+        raise NotImplementedError

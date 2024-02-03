@@ -2,25 +2,29 @@ import numpy as np
 from network import Network
 from layer import InputLayer, HiddenLayer, OutputLayer
 import yaml
+from functions import mse
 
 
 def main():
     config = yaml.safe_load(open("./config.yml"))
 
-    data = np.random.randn(7, 5) * 10
+    features = np.random.randn(7, 5) * 10
+    targets = np.random.randn(7, 1) * 10
 
     network = Network(
         [
-            InputLayer(size=data.shape[1]),
+            InputLayer(size=features.shape[1]),
             HiddenLayer(size=6),
             OutputLayer(activation="softmax"),
         ]
     )
 
     # training
-    pred = network.forward_pass(data=data)
+    preds = network.forward_pass(features=features)
+    error = mse(preds - targets)
     # network.backward_pass()
-    print(pred)
+
+    print(error)
 
 
 if __name__ == "__main__":

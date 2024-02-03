@@ -3,11 +3,12 @@ class Network:
         self.layers = layers
         self.outputs = []
 
-    def forward_pass(self, data):
+    def forward_pass(self, features):
         """forward pass of network calls forward pass of each layer and returns final output"""
-        for layer in self.layers:
-            data = layer.forward_pass(data)
-            self.outputs.append(data)
+        self.outputs = [self.layers[0].forward_pass(features)]
+
+        for layer in self.layers[1:]:
+            self.outputs.append(layer.forward_pass(self.outputs[-1]))
 
         return self.outputs[-1]
 
