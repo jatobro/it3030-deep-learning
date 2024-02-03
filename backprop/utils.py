@@ -25,6 +25,14 @@ def d_mse(x):
 # activations functions and their derivatives / gradients
 
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def d_sigmoid(z):
+    return z * (1 - z)
+
+
 def relu(x):
     return np.maximum(0, x)
 

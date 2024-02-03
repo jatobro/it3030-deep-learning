@@ -1,6 +1,6 @@
 import numpy as np
 from numpy._typing import NDArray
-from functions import relu, softmax, broadcast
+from utils import relu, softmax, d_sigmoid
 
 from abc import ABC, abstractmethod
 
@@ -46,9 +46,13 @@ class HiddenLayer(Layer):
             np.einsum("ij,jk->ik", inputs, self.weights) + self.biases
         )
 
-    def backward_pass(self, inputs):
+    def backward_pass(self, outputs):
         """calculates the jacobi matrix (this layer respect to earlier layer, if first layer, respect to weights), dot this with the inputs and return the result"""
-        raise NotImplementedError
+        j_z_sum = np.array(
+            [np.diag(d_sigmoid(case)) for case in outputs]
+        )  # jacobian current layer respect to sum
+
+        return np.einsum("ijj,jk->ijk", j_z_sum, self.weights.T)
 
 
 class InputLayer(Layer):

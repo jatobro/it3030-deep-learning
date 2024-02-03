@@ -2,7 +2,7 @@ import numpy as np
 from network import Network
 from layer import InputLayer, HiddenLayer, OutputLayer
 import yaml
-from functions import mse
+from utils import mse
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
     error = mse(preds - targets)
     # network.backward_pass()
 
-    print(error)
+    print(network.backward_pass())
 
 
 if __name__ == "__main__":

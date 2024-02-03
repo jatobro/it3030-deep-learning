@@ -13,4 +13,8 @@ class Network:
         return self.outputs[-1]
 
     def backward_pass(self):
-        pass
+        "testing for specific layer"
+        hidden = self.layers[1]
+        output = self.outputs[1]
+
+        return hidden.backward_pass(output)
