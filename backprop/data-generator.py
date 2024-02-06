@@ -1,4 +1,5 @@
-from functions import clamp
+from utils import clamp
+
 
 class DataGenerator:
     def __init__(self, size=20, noise_level=0.05, relative_sizes=(0.7, 0.2, 0.1)):

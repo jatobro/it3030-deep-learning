@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Network:
     def __init__(self, layers):
         self.layers = layers
@@ -14,7 +17,4 @@ class Network:
 
     def backward_pass(self):
         "testing for specific layer"
-        hidden = self.layers[1]
-        output = self.outputs[1]
-
-        return hidden.backward_pass(output)
+        pass

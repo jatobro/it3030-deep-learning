@@ -1,6 +1,6 @@
 import numpy as np
 from network import Network
-from layer import InputLayer, HiddenLayer, OutputLayer
+from layer import InputLayer, HiddenLayer, SoftmaxLayer
 import yaml
 from utils import mse
 
@@ -8,23 +8,23 @@ from utils import mse
 def main():
     config = yaml.safe_load(open("./config.yml"))
 
-    features = np.random.randn(7, 5) * 10
-    targets = np.random.randn(7, 1) * 10
+    features = np.random.randn(5) * 10
+    target = np.random.randn(1) * 10
 
     network = Network(
         [
-            InputLayer(size=features.shape[1]),
+            InputLayer(size=len(features)),
             HiddenLayer(size=6),
-            OutputLayer(activation="softmax"),
+            SoftmaxLayer(),
         ]
     )
 
     # training
-    preds = network.forward_pass(features=features)
-    error = mse(preds - targets)
+    pred = network.forward_pass(features=features)
+    error = mse(pred - target)
     # network.backward_pass()
 
-    print(network.backward_pass())
+    print("output:", pred, "\nerror:", error)
 
 
 if __name__ == "__main__":
