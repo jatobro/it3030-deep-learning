@@ -1,15 +1,18 @@
 import numpy as np
+from utils import mse, d_mse
 from network import Network
 from layer import InputLayer, HiddenLayer, SoftmaxLayer
 import yaml
-from utils import mse
+
+EPOCHS = 1
+CASES = 7
 
 
 def main():
     config = yaml.safe_load(open("./config.yml"))
 
-    features = np.random.randn(5) * 10
-    target = np.random.randn(1) * 10
+    features = np.random.randn(CASES, 5) * 10
+    targets = np.random.randn(CASES, 5) * 10
 
     network = Network(
         [
@@ -19,12 +22,14 @@ def main():
         ]
     )
 
-    # training
-    pred = network.forward_pass(features=features)
-    error = mse(pred - target)
-    # network.backward_pass()
+    for _ in range(EPOCHS):
+        for i in range(len(CASES)):
+            pred = network.forward_pass(features=features[i])
 
-    print("output:", pred, "\nerror:", error)
+            print("pred:", pred)
+            print("mse:", mse(pred, targets[i]))
+
+            # network.backward_pass(d_mse(pred, targets[i])
 
 
 if __name__ == "__main__":

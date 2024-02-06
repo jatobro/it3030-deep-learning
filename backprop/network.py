@@ -4,17 +4,17 @@ import numpy as np
 class Network:
     def __init__(self, layers):
         self.layers = layers
-        self.outputs = []
 
     def forward_pass(self, features):
         """forward pass of network calls forward pass of each layer and returns final output"""
-        self.outputs = [self.layers[0].forward_pass(features)]
+        outputs = features
+        for layer in self.layers:
+            outputs = layer.forward_pass(outputs)
 
-        for layer in self.layers[1:]:
-            self.outputs.append(layer.forward_pass(self.outputs[-1]))
+        return outputs
 
-        return self.outputs[-1]
-
-    def backward_pass(self):
-        "testing for specific layer"
-        pass
+    def backward_pass(self, jacobi_loss_output):
+        """backward pass of network calls backward pass of each layer and returns final output"""
+        outputs = jacobi_loss_output
+        for layer in reversed(self.layers):
+            outputs = layer.backward_pass(outputs)

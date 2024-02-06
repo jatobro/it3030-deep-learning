@@ -14,7 +14,7 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def backward_pass(self, jacobi_loss_output) -> NDArray[np.float64]:
+    def backward_pass(self, input) -> NDArray[np.float64]:
         pass
 
 
@@ -26,6 +26,11 @@ class HiddenLayer(Layer):
             relu
             if activation == "relu"
             else softmax if activation == "softmax" else activation
+        )
+        self.d_activation = (
+            d_relu
+            if activation == "relu"
+            else d_sigmoid if activation == "sigmoid" else None
         )
         self.learning_rate = learning_rate
         self.weight_range = weight_range
@@ -44,10 +49,10 @@ class HiddenLayer(Layer):
 
         return self.activation(np.dot(input, self.weights) + self.biases)
 
-    def backward_pass(self, jacobi_loss_output):
+    def backward_pass(self, input):
         """calculates the jacobi matrix (this layer respect to earlier layer, if first layer, respect to weights), dot this with the inputs and return the result"""
 
-        j_z_sum = np.diag(self.d_activation(jacobi_loss_output))
+        j_z_sum = np.diag(self.d_activation(input))
 
 
 class InputLayer(Layer):
@@ -61,10 +66,16 @@ class InputLayer(Layer):
 
 
 class SoftmaxLayer(Layer):
+    def __init__(self, size=3):
+        super().__init__(size)
+
+        self.softmaxed_outputs = None
+
     def forward_pass(self, input):
         """for output layers we only apply softmax (or other activation function) to each case (each row) of the inputs"""
-        return softmax(input)
+        self.softmaxed_outputs = softmax(input)
+        return self.softmaxed_outputs
 
-    def backward_pass(self, jacobian_loss_output):
+    def backward_pass(self, input):
         """calculates the softmax jacobi matrix, dot this with the inputs and return the result"""
-        pass
+        j_softmax = np.diag(input * (1 - input))

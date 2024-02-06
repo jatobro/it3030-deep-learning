@@ -14,12 +14,12 @@ def clamp(n, minn, maxn):
 # loss functions and their derivatives / gradients
 
 
-def mse(x):
-    return np.mean(np.square(x))
+def mse(z, t):
+    return np.mean(np.square(z - t))
 
 
-def d_mse(x):
-    return 2 * x
+def d_mse(z, t):
+    return (2 / len(z)) * (z - t)
 
 
 # activations functions and their derivatives / gradients
