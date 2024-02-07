@@ -12,24 +12,24 @@ def main():
     config = yaml.safe_load(open("./config.yml"))
 
     features = np.random.randn(CASES, 5) * 10
-    targets = np.random.randn(CASES, 5) * 10
+    targets = np.random.randn(CASES, 3) * 10
 
     network = Network(
         [
-            InputLayer(size=len(features)),
-            HiddenLayer(size=6),
+            InputLayer(size=features.shape[1]),
+            HiddenLayer(size=targets.shape[1]),
             SoftmaxLayer(),
         ]
     )
 
     for _ in range(EPOCHS):
-        for i in range(len(CASES)):
+        for i in range(CASES):
             pred = network.forward_pass(features=features[i])
 
             print("pred:", pred)
             print("mse:", mse(pred, targets[i]))
 
-            # network.backward_pass(d_mse(pred, targets[i])
+            network.backward_pass(d_mse(pred, targets[i]))
 
 
 if __name__ == "__main__":

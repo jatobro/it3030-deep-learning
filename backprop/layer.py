@@ -38,12 +38,8 @@ class HiddenLayer(Layer):
         self.weights = None
         self.biases = np.zeros(self.size)
 
-        self.input = None  # store the inputs for the backward pass
-
     def forward_pass(self, input):
         """for hidden layers we create weights (if they dont already exist) and calculate the output"""
-        self.input = input
-
         if self.weights is None:
             self.weights = np.random.randn(len(input), self.size) * self.weight_range
 
@@ -51,7 +47,6 @@ class HiddenLayer(Layer):
 
     def backward_pass(self, input):
         """calculates the jacobi matrix (this layer respect to earlier layer, if first layer, respect to weights), dot this with the inputs and return the result"""
-
         j_z_sum = np.diag(self.d_activation(input))
 
 
@@ -69,13 +64,14 @@ class SoftmaxLayer(Layer):
     def __init__(self, size=3):
         super().__init__(size)
 
-        self.softmaxed_outputs = None
-
     def forward_pass(self, input):
         """for output layers we only apply softmax (or other activation function) to each case (each row) of the inputs"""
-        self.softmaxed_outputs = softmax(input)
-        return self.softmaxed_outputs
+        self.size = len(input)
+        self.softmaxed = softmax(input)
+        return self.softmaxed
 
     def backward_pass(self, input):
         """calculates the softmax jacobi matrix, dot this with the inputs and return the result"""
-        j_softmax = np.diag(input * (1 - input))
+        j_softmax = np.f
+        # j_softmax = np.diag(self.softmaxed * (1 - self.softmaxed))
+        print(j_softmax)
