@@ -6,6 +6,7 @@ class Network:
         self.layers = layers
 
         self.outputs = []
+        self.gradients = []
 
     def forward_pass(self, features):
         """forward pass of network calls forward pass of each layer and returns final output"""

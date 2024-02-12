@@ -61,17 +61,22 @@ class InputLayer(Layer):
 
 
 class SoftmaxLayer(Layer):
-    def __init__(self, size=3):
+    def __init__(self, size=None):
         super().__init__(size)
+
+        self.softmaxed_outputs = None
 
     def forward_pass(self, input):
         """for output layers we only apply softmax (or other activation function) to each case (each row) of the inputs"""
         self.size = len(input)
-        self.softmaxed = softmax(input)
-        return self.softmaxed
+
+        self.softmaxed_outputs = softmax(input)
+        return self.softmaxed_outputs
 
     def backward_pass(self, input):
         """calculates the softmax jacobi matrix, dot this with the inputs and return the result"""
-        j_softmax = np.f
-        # j_softmax = np.diag(self.softmaxed * (1 - self.softmaxed))
-        print(j_softmax)
+        j_softmax_output = np.eye(self.size) * self.softmaxed_outputs + -1 * np.outer(
+            self.softmaxed_outputs, self.softmaxed_outputs
+        )  # TODO: check if this is correct
+
+        return np.dot(input, j_softmax_output)

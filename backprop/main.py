@@ -26,8 +26,8 @@ def main():
         for i in range(CASES):
             pred = network.forward_pass(features=features[i])
 
-            print("pred:", pred)
-            print("mse:", mse(pred, targets[i]))
+            # print("pred:", pred)
+            # print("mse:", mse(pred, targets[i]))
 
             network.backward_pass(d_mse(pred, targets[i]))
 
