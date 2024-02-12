@@ -1,7 +1,7 @@
 import numpy as np
-from utils import mse, d_mse
+from utils import d_mse
 from network import Network
-from layer import InputLayer, HiddenLayer, SoftmaxLayer
+from layer import HiddenLayer, SoftmaxLayer
 import yaml
 
 EPOCHS = 1
@@ -16,7 +16,7 @@ def main():
 
     network = Network(
         [
-            InputLayer(size=features.shape[1]),
+            HiddenLayer(size=10),
             HiddenLayer(size=targets.shape[1]),
             SoftmaxLayer(),
         ]
@@ -29,7 +29,8 @@ def main():
             # print("pred:", pred)
             # print("mse:", mse(pred, targets[i]))
 
-            network.backward_pass(d_mse(pred, targets[i]))
+            gradients = network.backward_pass(d_mse(pred, targets[i]))
+            print(gradients)
 
 
 if __name__ == "__main__":
