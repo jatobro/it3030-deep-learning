@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 
 class Layer(ABC):
-    def __init__(self, size=3):
+    def __init__(self, size):
         self.size = size
 
         self.inputs = None
@@ -53,11 +53,22 @@ class HiddenLayer(Layer):
     def backward_pass(self, j_loss_outputs):
         """calculates the jacobi matrix (this layer respect to earlier layer, if first layer, respect to weights), dot this with the inputs and return the result"""
         j_outputs_weights = np.outer(self.inputs, self.d_activation(self.outputs))
-        gradients = np.dot(j_loss_outputs, j_outputs_weights.T)
+
+        j_outputs_biases = self.d_activation(self.outputs)
+
+        gradients = (
+            j_outputs_weights * j_loss_outputs,
+            np.dot(j_outputs_biases, j_loss_outputs),
+        )
 
         j_outputs_inputs = np.dot(self.d_activation(self.outputs), self.weights.T)
 
         return gradients, j_outputs_inputs
+
+    def tune(self, weight_gradient, bias_gradient):
+        """tunes the weights and biases of the layer"""
+        self.weights -= self.learning_rate * weight_gradient
+        self.biases -= self.learning_rate * bias_gradient
 
 
 class SoftmaxLayer(Layer):
