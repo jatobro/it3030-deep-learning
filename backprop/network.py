@@ -26,8 +26,10 @@ class Network:
         for layer in reversed(self.layers[:-1]):
             gradient, j_loss_output = layer.backward_pass(j_loss_output)
 
-            weight_gradients.append(gradient[0])
-            bias_gradients.append(gradient[1])
+            (weight_gradient, bias_gradient) = gradient
+
+            weight_gradients.append(weight_gradient)
+            bias_gradients.append(bias_gradient)
 
         return list(reversed(weight_gradients)), list(reversed(bias_gradients))
 
