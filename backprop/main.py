@@ -1,18 +1,16 @@
+from matplotlib import pyplot as plt
 import numpy as np
-from utils import d_mse, mse
+from utils import d_mse, mse, l1_reg
 from network import Network
 from layer import HiddenLayer, SoftmaxLayer
 import yaml
 
 
-EPOCHS = 10000
+EPOCHS = 100
 CASES = 1000
 
 
 def main():
-
-    config = yaml.safe_load(open("./config.yml"))
-
     features = np.random.randn(CASES, 5) * 10
     targets = np.random.randn(CASES, 3) * 10
 
@@ -24,7 +22,9 @@ def main():
         ]
     )
 
-    for _ in range(EPOCHS):
+    error_per_epoch = []
+
+    for e in range(EPOCHS):
         errors = []
 
         acc_weight_gradients = None
@@ -52,16 +52,35 @@ def main():
                 g + b for g, b in zip(acc_bias_gradients, bias_gradients)
             ]
 
-            # print(f"case {i + 1} weight gradients: {weight_gradients}")
-            # print(f"case {i + 1} bias gradients: {bias_gradients}")
-            # print()
+        error = np.mean(errors)
 
-        print(f"epoch {_ + 1} error: {np.mean(errors)}")
+        print(f"epoch {e + 1} error: {error}")
 
         aggregated_weight_gradients = [g / CASES for g in acc_weight_gradients]
         aggregated_bias_gradients = [g / CASES for g in acc_bias_gradients]
 
         network.tune(aggregated_weight_gradients, aggregated_bias_gradients)
+
+        error_per_epoch.append(error)
+
+    epochs = list(range(1, EPOCHS + 1))
+
+    # Plotting the graph
+
+    plt.plot(
+        epochs,
+        error_per_epoch,
+        marker="o",
+        linestyle="-",
+        color="b",
+        label="MSE per Epoch",
+    )
+    plt.title("MSE vs. Epochs")
+    plt.xlabel("Epoch")
+    plt.ylabel("Mean MSE per case")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import numpy as np
 from numpy._typing import NDArray
 from utils import relu, softmax, sigmoid, d_sigmoid, d_relu
+from config import REG_C, REG
 
 from abc import ABC, abstractmethod
 
@@ -57,7 +58,11 @@ class HiddenLayer(Layer):
         j_outputs_biases = self.d_activation(self.outputs)
 
         gradients = (
-            j_outputs_weights * j_loss_outputs,
+            (
+                j_outputs_weights * j_loss_outputs + np.sign(self.weights)
+                if REG == "l1"
+                else self.weights if REG == "l2" else 0 * REG_C
+            ),
             np.dot(j_outputs_biases, j_loss_outputs),
         )
 

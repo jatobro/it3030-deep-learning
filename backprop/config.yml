@@ -1,3 +1,0 @@
-globals:
-  loss: cross_entropy
-  lrate: 0.1
