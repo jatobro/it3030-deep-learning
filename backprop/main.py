@@ -9,11 +9,11 @@ from config import REG, REG_C
 
 
 EPOCHS = 100
-CASES = 1000
+CASES = 20
 
 
 def main():
-    data = gen_standard_cases()
+    data = gen_standard_cases(show=False)
 
     features = np.random.randn(CASES, 5) * 0.1
     targets = np.random.randn(CASES, 3) * 0.1
