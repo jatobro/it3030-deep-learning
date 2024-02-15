@@ -15,6 +15,7 @@ def main():
     features = np.random.randn(CASES, 5) * 10
     targets = np.random.randn(CASES, 3) * 10
 
+    # init of network and all layers except input layer (softmax and hidden with weights and biases)
     network = Network(
         [
             HiddenLayer(size=10),
