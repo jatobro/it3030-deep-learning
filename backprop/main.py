@@ -7,13 +7,13 @@ from layer import HiddenLayer, SoftmaxLayer
 from config import REG, REG_C
 
 
-EPOCHS = 1000
+EPOCHS = 100
 CASES = 1000
 
 
 def main():
-    features = np.random.randn(CASES, 5) * 10
-    targets = np.random.randn(CASES, 3) * 10
+    features = np.random.randn(CASES, 5) * 0.1
+    targets = np.random.randn(CASES, 3) * 0.1
 
     # init of network and all layers except input layer (softmax and hidden with weights and biases)
     network = Network(
@@ -33,7 +33,7 @@ def main():
         acc_bias_gradients = None
 
         for i in range(CASES):
-            # forward pass through network and get prediction
+            # forward pass through network and get prediction with features for each case
             pred = network.forward_pass(features=features[i])
 
             # regularization
