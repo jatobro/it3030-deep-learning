@@ -23,10 +23,10 @@ def main():
         ]
     )
 
-    error_per_epoch = []
+    error_per_epoch = []  # means of errors for all cases for each epoch
 
     for e in range(EPOCHS):
-        errors = []
+        errors = []  # list to store errors for each case
 
         acc_weight_gradients = None
         acc_bias_gradients = None
@@ -46,12 +46,15 @@ def main():
                 )
             )
 
+            # adding error for each case
             errors.append(mse(pred, targets[i]) + reg * REG_C)
 
             # backward pass through network and get gradients
             weight_gradients, bias_gradients = network.backward_pass(
                 d_mse(pred, targets[i])
             )
+
+            # accumulate gradients to calculate mean between all cases
 
             if i == 0:
                 acc_weight_gradients = [np.zeros_like(w) for w in weight_gradients]
@@ -68,14 +71,17 @@ def main():
 
         print(f"epoch {e + 1} error: {error}")
 
+        # calculating mean gradients
+
         aggregated_weight_gradients = [g / CASES for g in acc_weight_gradients]
         aggregated_bias_gradients = [g / CASES for g in acc_bias_gradients]
 
+        # tuning the network with mean gradients
         network.tune(aggregated_weight_gradients, aggregated_bias_gradients)
 
         error_per_epoch.append(error)
 
-    # Plotting the graph
+    # plotting the graph
 
     plt.plot(
         list(range(1, EPOCHS + 1)),
