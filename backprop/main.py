@@ -1,12 +1,13 @@
 from matplotlib import pyplot as plt
 import numpy as np
-from utils import d_mse, mse, l1_reg
+from utils import d_mse, mse
 from network import Network
 from layer import HiddenLayer, SoftmaxLayer
-import yaml
+
+from config import REG, REG_C
 
 
-EPOCHS = 100
+EPOCHS = 1000
 CASES = 1000
 
 
@@ -34,7 +35,18 @@ def main():
             # forward pass through network and get prediction
             pred = network.forward_pass(features=features[i])
 
-            errors.append(mse(pred, targets[i]))
+            # regularization
+            reg = (
+                sum(np.sum(np.abs(w)) for w in network.get_weights())
+                if REG == "l1"
+                else (
+                    sum(np.sum(w**2) / 2 for w in network.get_weights())
+                    if REG == "l2"
+                    else 0
+                )
+            )
+
+            errors.append(mse(pred, targets[i]) + reg * REG_C)
 
             # backward pass through network and get gradients
             weight_gradients, bias_gradients = network.backward_pass(
@@ -63,12 +75,10 @@ def main():
 
         error_per_epoch.append(error)
 
-    epochs = list(range(1, EPOCHS + 1))
-
     # Plotting the graph
 
     plt.plot(
-        epochs,
+        list(range(1, EPOCHS + 1)),
         error_per_epoch,
         marker="o",
         linestyle="-",

@@ -37,3 +37,6 @@ class Network:
             self.layers[:-1], weight_gradients, bias_gradients
         ):
             layer.tune(w_gradient, b_gradient)
+
+    def get_weights(self):
+        return [layer.get_weights() for layer in self.layers[:-1]]

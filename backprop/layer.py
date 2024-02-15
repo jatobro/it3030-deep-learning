@@ -75,6 +75,9 @@ class HiddenLayer(Layer):
         self.weights -= self.learning_rate * weight_gradient
         self.biases -= self.learning_rate * bias_gradient
 
+    def get_weights(self):
+        return self.weights
+
 
 class SoftmaxLayer(Layer):
     def __init__(self, size=None):
