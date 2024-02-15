@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
+from doodler import gen_standard_cases
 from utils import d_mse, mse
 from network import Network
 from layer import HiddenLayer, SoftmaxLayer
@@ -12,6 +13,8 @@ CASES = 1000
 
 
 def main():
+    data = gen_standard_cases()
+
     features = np.random.randn(CASES, 5) * 0.1
     targets = np.random.randn(CASES, 3) * 0.1
 
