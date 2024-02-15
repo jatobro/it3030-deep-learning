@@ -1,4 +1,3 @@
-import numpy as np
 from layer import Layer
 
 
@@ -41,4 +40,6 @@ class Network:
             layer.tune(w_gradient, b_gradient)
 
     def get_weights(self):
-        return [layer.get_weights() for layer in self.layers[:-1]]
+        return [
+            layer.get_weights() for layer in self.layers[:-1]
+        ]  # every layer except softmax
