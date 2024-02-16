@@ -16,6 +16,7 @@ from config import (
     CASES,
     EPOCHS,
     WEIGHT_RANGE,
+    LEARNING_RATE,
 )
 
 
@@ -34,7 +35,12 @@ def main():
     )
 
     hidden_layers = [
-        HiddenLayer(size=NEURON_COUNT, activation=ACTIVATION, weight_range=WEIGHT_RANGE)
+        HiddenLayer(
+            size=NEURON_COUNT,
+            activation=ACTIVATION,
+            weight_range=WEIGHT_RANGE,
+            learning_rate=LEARNING_RATE,
+        )
         for _ in range(LAYER_COUNT - 1)
     ]
 

@@ -1,7 +1,7 @@
 from utils import relu, mse, d_mse
 
 LAYER_COUNT = 5
-NEURON_COUNT = 20
+NEURON_COUNT = 4
 
 ACTIVATION = relu
 
