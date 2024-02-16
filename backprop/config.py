@@ -1,18 +1,19 @@
-from utils import relu, mse, d_mse
+from utils import relu, mse, d_mse, cross_entropy, d_cross_entropy, tanh, d_tanh
 
-LAYER_COUNT = 5
-NEURON_COUNT = 4
+LAYER_COUNT = 2
+NEURON_COUNT = 100
 
-ACTIVATION = relu
+ACTIVATION = tanh
+D_ACTIVATION = d_tanh
 
-LOSS = mse
-LOSS_DERIVATIVE = d_mse
+LOSS = cross_entropy
+LOSS_DERIVATIVE = d_cross_entropy
 
-CASES = 1000
-EPOCHS = 100
+CASES = 500
+EPOCHS = 10
 
 
-REG = "l1"
+REG = "l2"
 REG_C = 0.001
 
 WEIGHT_RANGE = 0.05

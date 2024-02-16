@@ -24,7 +24,12 @@ class Layer(ABC):
 
 class HiddenLayer(Layer):
     def __init__(
-        self, size=5, activation=sigmoid, learning_rate=0.01, weight_range=0.05
+        self,
+        size=5,
+        activation=sigmoid,
+        learning_rate=0.01,
+        weight_range=0.05,
+        d_activation=d_sigmoid,
     ):
         super().__init__(size)
 
@@ -33,7 +38,7 @@ class HiddenLayer(Layer):
             if activation == "relu"
             else softmax if activation == "softmax" else activation
         )
-        self.d_activation = d_sigmoid
+        self.d_activation = d_activation
 
         self.learning_rate = learning_rate
         self.weight_range = weight_range

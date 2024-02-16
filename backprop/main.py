@@ -17,6 +17,7 @@ from config import (
     EPOCHS,
     WEIGHT_RANGE,
     LEARNING_RATE,
+    D_ACTIVATION,
 )
 
 
@@ -27,7 +28,7 @@ TEST_CASES = int(CASES * 0.2)
 
 def main():
     (images, targets_vectors, labels, (rows, cols), flat) = gen_standard_cases(
-        count=CASES, show=False
+        show=False, count=CASES
     )
 
     (train_X, val_X, test_X, train_y, val_y, test_y) = train_val_test_split(
@@ -40,6 +41,7 @@ def main():
             activation=ACTIVATION,
             weight_range=WEIGHT_RANGE,
             learning_rate=LEARNING_RATE,
+            d_activation=D_ACTIVATION,
         )
         for _ in range(LAYER_COUNT - 1)
     ]
