@@ -49,6 +49,7 @@ class HiddenLayer(Layer):
             self.weights = np.random.randn(len(inputs), self.size) * self.weight_range
 
         self.outputs = self.activation(np.dot(inputs, self.weights) + self.biases)
+
         return self.outputs
 
     def backward_pass(self, j_loss_outputs):
@@ -77,6 +78,19 @@ class HiddenLayer(Layer):
 
     def get_weights(self):
         return self.weights
+
+
+class FlattenLayer(Layer):
+    def __init__(self, size=None):
+        super().__init__(size)
+
+    def forward_pass(self, inputs):
+        self.inputs = inputs
+        self.outputs = inputs.flatten()
+        return self.outputs
+
+    def backward_pass(self, input_jacobian):
+        pass
 
 
 class SoftmaxLayer(Layer):

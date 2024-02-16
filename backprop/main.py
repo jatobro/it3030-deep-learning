@@ -1,43 +1,70 @@
 from matplotlib import pyplot as plt
 import numpy as np
 from doodler import gen_standard_cases
-from utils import d_mse, mse
+from utils import mse, train_val_test_split
 from network import Network
-from layer import HiddenLayer, SoftmaxLayer
+from layer import HiddenLayer, SoftmaxLayer, FlattenLayer
 
-from config import REG, REG_C
+from config import (
+    REG,
+    REG_C,
+    ACTIVATION,
+    LAYER_COUNT,
+    NEURON_COUNT,
+    LOSS,
+    LOSS_DERIVATIVE,
+    CASES,
+    EPOCHS,
+    WEIGHT_RANGE,
+)
 
 
-EPOCHS = 100
-CASES = 20
+TRAIN_CASES = int(CASES * 0.6)
+VAL_CASES = int(CASES * 0.2)
+TEST_CASES = int(CASES * 0.2)
 
 
 def main():
-    data = gen_standard_cases(show=False)
+    (images, targets_vectors, labels, (rows, cols), flat) = gen_standard_cases(
+        count=CASES, show=False
+    )
 
-    features = np.random.randn(CASES, 5) * 0.1
-    targets = np.random.randn(CASES, 3) * 0.1
+    (train_X, val_X, test_X, train_y, val_y, test_y) = train_val_test_split(
+        images, targets_vectors, train_size=0.6, val_size=0.2
+    )
 
-    # init of network and all layers except input layer (softmax and hidden with weights and biases)
+    hidden_layers = [
+        HiddenLayer(size=NEURON_COUNT, activation=ACTIVATION, weight_range=WEIGHT_RANGE)
+        for _ in range(LAYER_COUNT - 1)
+    ]
+
+    # init of network and all layers (softmax and hidden with weights and biases)
     network = Network(
-        [
-            HiddenLayer(size=10),
-            HiddenLayer(size=targets.shape[1]),
+        [FlattenLayer()]
+        + hidden_layers
+        + [
+            HiddenLayer(
+                size=train_y.shape[1], activation=ACTIVATION, weight_range=WEIGHT_RANGE
+            ),
             SoftmaxLayer(),
         ]
     )
 
-    error_per_epoch = []  # means of errors for all cases for each epoch
+    # training the network
 
-    for e in range(EPOCHS):
-        errors = []  # list to store errors for each case
+    train_loss = []  # loss from training
+    val_loss = []
+
+    for _ in range(EPOCHS):
+        train_errors = []
+        val_errors = []
 
         acc_weight_gradients = None
         acc_bias_gradients = None
 
-        for i in range(CASES):
+        for i in range(TRAIN_CASES):
             # forward pass through network and get prediction with features for each case
-            pred = network.forward_pass(features=features[i])
+            pred = network.forward_pass(features=train_X[i])
 
             # regularization
             reg = (
@@ -51,11 +78,11 @@ def main():
             )
 
             # adding error for each case
-            errors.append(mse(pred, targets[i]) + reg * REG_C)
+            train_errors.append(LOSS(pred, train_y[i]) + reg * REG_C)
 
             # backward pass through network and get gradients
             weight_gradients, bias_gradients = network.backward_pass(
-                d_mse(pred, targets[i])
+                LOSS_DERIVATIVE(pred, train_y[i])
             )
 
             # accumulate gradients to calculate mean between all cases
@@ -71,10 +98,6 @@ def main():
                 g + b for g, b in zip(acc_bias_gradients, bias_gradients)
             ]
 
-        error = np.mean(errors)
-
-        print(f"epoch {e + 1} error: {error}")
-
         # calculating mean gradients
 
         aggregated_weight_gradients = [g / CASES for g in acc_weight_gradients]
@@ -83,23 +106,55 @@ def main():
         # tuning the network with mean gradients
         network.tune(aggregated_weight_gradients, aggregated_bias_gradients)
 
-        error_per_epoch.append(error)
+        # validation
+        for i in range(VAL_CASES):
+            pred = network.forward_pass(features=val_X[i])
+            val_errors.append(mse(pred, val_y[i]))
+
+        train_error = np.mean(train_errors)
+        val_error = np.mean(val_errors)
+
+        print(train_error)
+
+        train_loss.append(train_error)
+        val_loss.append(val_error)
+
+    # testing the network
+
+    test_errors_per_case = []
+    for i in range(TEST_CASES):
+        pred = network.forward_pass(features=test_X[i])
+        test_errors_per_case.append(LOSS(pred, test_y[i]))
+
+    test_loss = [np.mean(test_errors_per_case) for _ in range(EPOCHS)]
+
+    print(test_loss[-1])
 
     # plotting the graph
 
+    epochs = range(1, EPOCHS + 1)
     plt.plot(
-        list(range(1, EPOCHS + 1)),
-        error_per_epoch,
-        marker="o",
-        linestyle="-",
-        color="b",
-        label="MSE per Epoch",
+        epochs,
+        train_loss,
+        color="blue",
+        label="Train",
     )
-    plt.title("MSE vs. Epochs")
+    plt.plot(
+        epochs,
+        val_loss,
+        color="yellow",
+        label="Validation",
+    )
+    plt.plot(
+        epochs,
+        test_loss,
+        color="red",
+        label="Test",
+    )
+
     plt.xlabel("Epoch")
-    plt.ylabel("Mean MSE per case")
+    plt.ylabel("Loss")
     plt.legend()
-    plt.grid(True)
     plt.show()
 
 

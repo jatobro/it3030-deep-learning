@@ -22,7 +22,7 @@ class Network:
             jacobi_loss_softmax
         )  # backward through softmax layer (no weights)
 
-        for layer in reversed(self.layers[:-1]):
+        for layer in reversed(self.layers[1:-1]):
             gradient, j_loss_output = layer.backward_pass(j_loss_output)
 
             (weight_gradient, bias_gradient) = gradient
@@ -35,11 +35,11 @@ class Network:
     def tune(self, weight_gradients, bias_gradients):
         """tunes the weights and biases of each layer"""
         for layer, w_gradient, b_gradient in zip(
-            self.layers[:-1], weight_gradients, bias_gradients
+            self.layers[1:-1], weight_gradients, bias_gradients
         ):
             layer.tune(w_gradient, b_gradient)
 
     def get_weights(self):
         return [
-            layer.get_weights() for layer in self.layers[:-1]
+            layer.get_weights() for layer in self.layers[1:-1]
         ]  # every layer except softmax

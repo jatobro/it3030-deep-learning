@@ -3,6 +3,21 @@ import numpy as np
 # helper functions
 
 
+def train_val_test_split(X, y, train_size=0.6, val_size=0.2):
+    first_split = int(len(X) * train_size)
+    second_split = first_split + int(len(X) * val_size)
+
+    train_X = X[:first_split]
+    val_X = X[first_split:second_split]
+    test_X = X[second_split:]
+
+    train_y = y[:first_split]
+    val_y = y[first_split:second_split]
+    test_y = y[second_split:]
+
+    return train_X, val_X, test_X, train_y, val_y, test_y
+
+
 def broadcast(x, n):
     return x.reshape(-1, 1).repeat(n, axis=1)
 
@@ -12,6 +27,14 @@ def clamp(n, minn, maxn):
 
 
 # loss functions and their derivatives / gradients
+
+
+def cross_entropy(z, t):
+    return -np.sum(t * np.log(z))
+
+
+def d_cross_entropy(z, t):
+    return -t / z
 
 
 def mse(z, t):
