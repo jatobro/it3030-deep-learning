@@ -4,11 +4,13 @@
     "source.organizeImports.ruff": true
   },
   "[python]": {
+    "editor.tabSize": 4,
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.fixAll": true,
       "source.organizeImports": true
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
-  }
+  },
+  "editor.insertSpaces": true
 }
