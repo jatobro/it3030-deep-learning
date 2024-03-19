@@ -3,6 +3,25 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
+def plot_loss_epoch(losses_show, val_losses):
+    plt.figure(figsize=(6, 4), dpi=150)
+
+    plt.grid()
+    plt.ylim(0, 0.03)
+
+    plt.plot(range(len(losses_show)), losses_show, label="Train Loss")
+    plt.plot(
+        range(
+            len(losses_show) // len(val_losses),
+            len(losses_show) + 1,
+            len(losses_show) // len(val_losses),
+        ),
+        val_losses,
+        label="Val Loss",
+    )
+    plt.show()
+
+
 def plot_pred_target(predictions, mean, std, idx):
     preds, targets = predictions[idx]
 
