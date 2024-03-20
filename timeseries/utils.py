@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+# plotters
+
 
 def plot_loss_epoch(losses_show, val_losses):
     plt.figure(figsize=(6, 4), dpi=150)
