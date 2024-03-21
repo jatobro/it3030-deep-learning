@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import torch
 from matplotlib import pyplot as plt
 
 # plotters
@@ -24,14 +25,8 @@ def plot_loss_epoch(losses_show, val_losses):
     plt.show()
 
 
-def plot_pred_target(predictions, mean, std, idx):
+def plot_pred_target(predictions, idx):
     preds, targets = predictions[idx]
-
-    # denormalize
-    preds = np.array(preds) * std["next_consumption"] + mean["next_consumption"]
-    targets = (
-        np.array(targets.cpu()) * std["next_consumption"] + mean["next_consumption"]
-    )
 
     plt.figure(figsize=(8, 4), dpi=150)
     plt.grid()
@@ -44,13 +39,10 @@ def plot_pred_target(predictions, mean, std, idx):
     plt.show()
 
 
-def plot_mse(predictions, mean, std):
+def plot_mse(predictions):
     squared_errors = []
 
     for p, t in predictions:
-        p = np.array(p) * std["next_consumption"] + mean["next_consumption"]
-        t = t.cpu().numpy() * std["next_consumption"] + mean["next_consumption"]
-
         squared_error = ((t - p) ** 2).tolist()
         squared_errors.append(squared_error)
 
@@ -71,3 +63,35 @@ def plot_mse(predictions, mean, std):
         alpha=0.2,
     )
     plt.show()
+
+
+# testers
+
+
+def step_by_step(model, device, test_loader, std, mean):
+    model.eval()
+
+    with torch.no_grad():
+        predictions = []
+
+        for X, y in test_loader:
+            X, y = X.to(device), y.to(device)
+
+            preds = []
+            i = 0
+            pred = 0
+            for f, t in zip(X, y):
+                if i > 0:
+                    f[1] = pred
+                    pred = model(f)
+                    preds.append(pred.item())
+                elif i == 0:
+                    pred = model(f)
+                    preds.append(pred.item())
+                i += 1
+
+            preds = np.array(preds) * std["next_consumption"] + mean["next_consumption"]
+            y = np.array(y.cpu()) * std["next_consumption"] + mean["next_consumption"]
+            predictions.append([preds, y])
+
+    return predictions
