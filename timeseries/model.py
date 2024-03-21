@@ -20,8 +20,9 @@ class FeedForward(nn.Module):
 
 
 class Convolutional(nn.Module):
-    def __init__(self, tw: int):
+    def __init__(self, tw):
         super().__init__()
+
         self.conv_stack = nn.Sequential(
             nn.Conv1d(
                 in_channels=tw, out_channels=32, kernel_size=3, stride=1, padding=1
@@ -40,6 +41,7 @@ class Convolutional(nn.Module):
             nn.BatchNorm1d(128),
             nn.MaxPool1d(2, 2),
         )
+
         self.linear_stack = nn.Sequential(
             nn.Linear(in_features=128, out_features=32),
             nn.LeakyReLU(0.2),
@@ -48,7 +50,10 @@ class Convolutional(nn.Module):
 
     def forward(self, x):
         x = self.conv_stack(x)
-        return self.linear_stack(x.view(x.shape[0], -1))
+        x = x.view(x.shape[0], -1)
+        x = self.linear_stack(x)
+
+        return x
 
 
 class LSTM(nn.Module):
