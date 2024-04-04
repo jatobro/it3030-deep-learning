@@ -12,5 +12,6 @@
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "editor.insertSpaces": true
+  "editor.insertSpaces": true,
+  "python.analysis.ignore": ["*"]
 }
