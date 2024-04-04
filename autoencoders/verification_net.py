@@ -1,9 +1,8 @@
 import numpy as np
+from stacked_mnist import DataMode, StackedMNISTData
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
 from tensorflow.keras.models import Sequential
-
-from stacked_mnist import DataMode, StackedMNISTData
 
 
 class VerificationNet:
@@ -48,9 +47,9 @@ class VerificationNet:
             # print(f"Read model from file, so I do not retrain")
             done_training = True
 
-        except:
+        except:  # noqa: E722
             print(
-                f"Could not read weights for verification_net from file. Must retrain..."
+                "Could not read weights for verification_net from file. Must retrain..."
             )
             done_training = False
 
