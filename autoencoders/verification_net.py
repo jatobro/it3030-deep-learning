@@ -1,5 +1,5 @@
 import numpy as np
-from stacked_mnist import DataMode, StackedMNISTData
+from stacked_mnist_tf import DataMode, StackedMNISTData
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, Input, MaxPooling2D
 from tensorflow.keras.models import Sequential
@@ -163,7 +163,7 @@ class VerificationNet:
 
 
 if __name__ == "__main__":
-    gen = StackedMNISTData(mode=DataMode.MONO_BINARY_COMPLETE, default_batch_size=2048)
+    gen = StackedMNISTData(mode=DataMode.MONO_FLOAT_COMPLETE, default_batch_size=2048)
     net = VerificationNet(force_learn=False)
     net.train(generator=gen, epochs=20)
 
