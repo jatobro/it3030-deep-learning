@@ -2,7 +2,9 @@ import torch
 from config import DEVICE
 from stacked_mnist import StackedMNISTData
 from standard import (
-    StandardAE,
+    Autoencoder,
+    Decoder,
+    Encoder,
     get_image_reconstructed,
     plot_image_reconstructed,
     train,
@@ -11,7 +13,7 @@ from torch.utils.data import DataLoader
 
 
 def ae_basic():
-    standard = StandardAE().to(DEVICE)
+    standard = Autoencoder(encoder=Encoder(), decoder=Decoder()).to(DEVICE)
 
     try:
         standard.load_state_dict(torch.load("models/standard_ae.pth"))
@@ -40,4 +42,5 @@ def ae_basic():
 
 
 if __name__ == "__main__":
+    print("Project 3: Autoencoders")
     ae_basic()

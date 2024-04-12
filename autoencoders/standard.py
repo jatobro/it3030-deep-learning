@@ -6,32 +6,103 @@ from stacked_mnist import StackedMNISTData
 from torch.utils.data import DataLoader
 
 
-class StandardAE(nn.Module):
-    def __init__(self):
+class Encoder(nn.Module):
+    def __init__(self, in_channels=1, out_channels=14, latent_dim=200):
         super().__init__()
 
-        # encoder (28 * 28 -> 3)
-        self.encoder = nn.Sequential(
-            nn.Linear(28 * 28, 128),
+        self.net = nn.Sequential(
+            nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                padding=1,
+            ),
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Conv2d(
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                padding=1,
+            ),
             nn.ReLU(),
-            nn.Linear(64, 12),
+            nn.Conv2d(
+                in_channels=out_channels,
+                out_channels=out_channels * 2,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+            ),
             nn.ReLU(),
-            nn.Linear(12, 3),
+            nn.Conv2d(
+                in_channels=out_channels * 2,
+                out_channels=out_channels * 4,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+            ),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=out_channels * 4,
+                out_channels=out_channels * 4,
+                kernel_size=3,
+                padding=1,
+            ),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(7 * 7 * out_channels * 4, latent_dim),
+            nn.ReLU(),
         )
 
-        # decoder (3 -> 28 * 28)
-        self.decoder = nn.Sequential(
-            nn.Linear(3, 12),
-            nn.ReLU(),
-            nn.Linear(12, 64),
-            nn.ReLU(),
-            nn.Linear(64, 128),
-            nn.ReLU(),
-            nn.Linear(128, 28 * 28),
-            nn.Sigmoid(),
+    def forward(self, x):
+        x = x.view(-1, 1, 28, 28)
+        return self.net(x)
+
+
+class Decoder(nn.Module):
+    def __init__(self, in_channels=1, out_channels=14, latent_dim=200):
+        super().__init__()
+
+        self.out_channels = out_channels
+
+        self.linear = nn.Sequential(
+            nn.Linear(latent_dim, 4 * out_channels * 7 * 7), nn.ReLU()
         )
+
+        self.conv = nn.Sequential(
+            nn.ConvTranspose2d(4 * out_channels, 4 * out_channels, 3, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                4 * out_channels,
+                2 * out_channels,
+                3,
+                padding=1,
+                stride=2,
+                output_padding=1,
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(2 * out_channels, 2 * out_channels, 3, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                2 * out_channels, out_channels, 3, padding=1, stride=2, output_padding=1
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(out_channels, out_channels, 3, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(out_channels, in_channels, 3, padding=1),
+        )
+
+    def forward(self, x):
+        x = self.linear(x)
+        x = x.view(-1, 4 * self.out_channels, 7, 7)
+        return self.conv(x)
+
+
+class Autoencoder(nn.Module):
+    def __init__(self, encoder, decoder):
+        super().__init__()
+
+        self.encoder = encoder.to(DEVICE)
+        self.decoder = decoder.to(DEVICE)
 
     def forward(self, x):
         z = self.encoder(x)
@@ -45,8 +116,6 @@ def train(model, loader, loss_fn, optimizer):
     model.train()
     for image, _ in loader:
         image = image.to(DEVICE)
-
-        image = image.view(-1, 28 * 28)
 
         reconstructed = model(image)
         loss = loss_fn(reconstructed, image)
@@ -66,8 +135,6 @@ def get_image_reconstructed(model, loader):
     with torch.no_grad():
         for image, _ in loader:
             image = image.to(DEVICE)
-
-            image = image.view(-1, 28 * 28)
 
             reconstructed = model(image)
 
@@ -96,7 +163,7 @@ if __name__ == "__main__":
     dataset = StackedMNISTData(root="data")
     loader = DataLoader(dataset=dataset, batch_size=1024, shuffle=True)
 
-    model = StandardAE().to(DEVICE)
+    model = Autoencoder(encoder=Encoder(), decoder=Decoder()).to(DEVICE)
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
