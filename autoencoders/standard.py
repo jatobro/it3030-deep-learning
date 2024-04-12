@@ -1,16 +1,9 @@
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
+from config import DEVICE
 from stacked_mnist import StackedMNISTData
 from torch.utils.data import DataLoader
-
-DEVICE = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
-)
 
 
 class StandardAE(nn.Module):
@@ -62,9 +55,41 @@ def train(model, loader, loss_fn, optimizer):
         optimizer.step()
         optimizer.zero_grad()
 
-        # print(f"Loss: {loss.item()}")
         losses.append(loss.item())
-    return losses, image, reconstructed
+    return losses
+
+
+def get_image_reconstructed(model, loader):
+    output = []
+
+    model.eval()
+    with torch.no_grad():
+        for image, _ in loader:
+            image = image.to(DEVICE)
+
+            image = image.view(-1, 28 * 28)
+
+            reconstructed = model(image)
+
+            output.append((image, reconstructed))
+
+    return output
+
+
+def plot_image_reconstructed(images_reconstructed):
+    for image, reconstructed in images_reconstructed:
+        image = image.view(-1, 28, 28)
+        reconstructed = reconstructed.view(-1, 28, 28)
+
+        plt.figure()
+        plt.imshow(image[1].cpu().numpy())
+        plt.title("Original")
+        plt.show()
+
+        plt.figure()
+        plt.imshow(reconstructed[1].cpu().numpy())
+        plt.title("Reconstructed")
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -76,38 +101,21 @@ if __name__ == "__main__":
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-    epochs = 10
+    epochs = 20
+
     losses = []
-    images = []
-    reconstructed_images = []
     for epoch in range(epochs):
-        loss, image, reconstructed = train(model, loader, loss_fn, optimizer)
+        loss = train(model, loader, loss_fn, optimizer)
         print(f"Epoch {epoch + 1}/{epochs}, Loss: {sum(loss) / len(loss)}")
 
         losses.extend(loss)
 
-        images.append(image)
-        reconstructed_images.append(reconstructed)
+    torch.save(model.state_dict(), "models/standard_ae.pth")
 
     plt.style.use("fivethirtyeight")
     plt.xlabel("Iterations")
     plt.ylabel("Loss")
 
-    plt.plot(losses[-100:])
+    plt.plot(losses[-1000:])
 
     plt.show()
-
-    with torch.no_grad():
-        for image, reconstructed in zip(images, reconstructed_images):
-            image = image.view(-1, 28, 28)
-            reconstructed = reconstructed.view(-1, 28, 28)
-
-            plt.figure()
-            plt.imshow(image[0].cpu().numpy())
-            plt.title("Original")
-            plt.show()
-
-            plt.figure()
-            plt.imshow(reconstructed[0].cpu().numpy())
-            plt.title("Reconstructed")
-            plt.show()
