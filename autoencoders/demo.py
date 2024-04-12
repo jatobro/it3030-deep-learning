@@ -42,28 +42,30 @@ def ae_basic():
     test_dataset = StackedMNISTData(root="data", train=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=1024, shuffle=True)
 
-    total = 0
-    correct = 0
+    def verififcation(autoencoder, classifier, loader):
+        total = 0
+        correct = 0
 
-    standard.eval()
-    classifier.eval()
-    with torch.no_grad():
-        for image, _ in test_loader:
-            image = image.to(DEVICE)
+        classifier.eval()
+        autoencoder.eval()
+        with torch.no_grad():
+            for image, _ in loader:
+                image = image.to(DEVICE)
 
-            reconstructed = standard(image)
+                reconstructed = autoencoder(image)
 
-            label = classifier(image)
-            pred = classifier(reconstructed)
+                label = classifier(image)
+                pred = classifier(reconstructed)
 
-            _, pred = torch.max(pred, 1)
-            _, label = torch.max(label, 1)
+                _, label = torch.max(label, 1)
+                _, pred = torch.max(pred, 1)
 
-            total += label.size(0)
-            correct += (pred == label).sum().item()
+                total += label.size(0)
+                correct += (pred == label).sum().item()
 
-    print("Accuracy:", correct / total)
+        return correct / total
 
+    print(f"Accuracy: {verififcation(standard, classifier, test_loader)}")
     plot_image_reconstructed(get_image_reconstructed(standard, test_loader))
 
 
