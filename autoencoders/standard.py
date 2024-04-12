@@ -54,7 +54,6 @@ class Encoder(nn.Module):
         )
 
     def forward(self, x):
-        x = x.view(-1, 1, 28, 28)
         return self.net(x)
 
 
