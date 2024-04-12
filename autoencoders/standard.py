@@ -10,6 +10,8 @@ class Encoder(nn.Module):
     def __init__(self, in_channels=1, out_channels=14, latent_dim=200):
         super().__init__()
 
+        self.in_channels = in_channels
+
         self.net = nn.Sequential(
             nn.Conv2d(
                 in_channels=in_channels,
@@ -54,6 +56,7 @@ class Encoder(nn.Module):
         )
 
     def forward(self, x):
+        x = x.view(-1, self.in_channels, 28, 28)
         return self.net(x)
 
 
