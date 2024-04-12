@@ -59,11 +59,10 @@ def train(model, loader, loss_fn, optimizer):
 
 
 def test(model, loader):
-    model.eval()
-
     correct = 0
     total = 0
 
+    model.eval()
     with torch.no_grad():
         for image, label in loader:
             image, label = image.to(DEVICE), label.to(DEVICE)
@@ -76,6 +75,25 @@ def test(model, loader):
             correct += (predicted == label).sum().item()
 
     return correct / total
+
+
+def validate(autoencoder, loader):
+    hits = 0
+
+    model.eval()
+    with torch.no_grad():
+        for image, _ in loader:
+            image = image.to(DEVICE)
+
+            reconstructed = autoencoder(image)
+
+            image_class = model(image)
+            reconstructed_class = model(reconstructed)
+
+            if image_class == reconstructed_class:
+                hits += 1
+
+    return hits / len(loader)
 
 
 if __name__ == "__main__":

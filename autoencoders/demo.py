@@ -1,4 +1,5 @@
 import torch
+from classifier import Classifier
 from config import DEVICE
 from stacked_mnist import StackedMNISTData
 from standard import (
@@ -13,7 +14,10 @@ from torch.utils.data import DataLoader
 
 
 def ae_basic():
+    classifier = Classifier().to(DEVICE)
     standard = Autoencoder(encoder=Encoder(), decoder=Decoder()).to(DEVICE)
+
+    classifier.load_state_dict(torch.load("models/verification_classifier.pth"))
 
     try:
         standard.load_state_dict(torch.load("models/standard_ae.pth"))
@@ -37,6 +41,28 @@ def ae_basic():
 
     test_dataset = StackedMNISTData(root="data", train=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=1024, shuffle=True)
+
+    total = 0
+    correct = 0
+
+    standard.eval()
+    classifier.eval()
+    with torch.no_grad():
+        for image, _ in test_loader:
+            image = image.to(DEVICE)
+
+            reconstructed = standard(image)
+
+            label = classifier(image)
+            pred = classifier(reconstructed)
+
+            _, pred = torch.max(pred, 1)
+            _, label = torch.max(label, 1)
+
+            total += label.size(0)
+            correct += (pred == label).sum().item()
+
+    print("Accuracy:", correct / total)
 
     plot_image_reconstructed(get_image_reconstructed(standard, test_loader))
 
