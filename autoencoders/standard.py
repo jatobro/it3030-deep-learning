@@ -130,6 +130,27 @@ def train(model, loader, loss_fn, optimizer):
     return losses
 
 
+def test(model, classifier, loader):
+    hits = 0
+
+    model.eval()
+    with torch.no_grad():
+        for image, _ in loader:
+            image = image.to(DEVICE)
+
+            reconstructed = model(image)
+
+            image_label = classifier(image)
+            reconstructed_label = classifier(reconstructed)
+
+            print(image_label, reconstructed_label)
+
+            if image_label == reconstructed_label:
+                hits += 1
+
+    return hits / len(loader)
+
+
 def get_image_reconstructed(model, loader):
     output = []
 
