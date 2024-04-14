@@ -130,8 +130,8 @@ def train(model, loader, loss_fn, optimizer):
     return losses
 
 
-def test(model, classifier, loader):
-    hits = 0
+def test(model, loader, loss_fn):
+    losses = []
 
     model.eval()
     with torch.no_grad():
@@ -140,15 +140,10 @@ def test(model, classifier, loader):
 
             reconstructed = model(image)
 
-            image_label = classifier(image)
-            reconstructed_label = classifier(reconstructed)
+            loss = loss_fn(reconstructed, image)
+            losses.append(loss.item())
 
-            print(image_label, reconstructed_label)
-
-            if image_label == reconstructed_label:
-                hits += 1
-
-    return hits / len(loader)
+    return losses
 
 
 def get_image_reconstructed(model, loader):
@@ -164,22 +159,6 @@ def get_image_reconstructed(model, loader):
             output.append((image, reconstructed))
 
     return output
-
-
-def plot_image_reconstructed(images_reconstructed):
-    for image, reconstructed in images_reconstructed:
-        image = image.view(-1, 28, 28)
-        reconstructed = reconstructed.view(-1, 28, 28)
-
-        plt.figure()
-        plt.imshow(image[1].cpu().numpy())
-        plt.title("Original")
-        plt.show()
-
-        plt.figure()
-        plt.imshow(reconstructed[1].cpu().numpy())
-        plt.title("Reconstructed")
-        plt.show()
 
 
 if __name__ == "__main__":
