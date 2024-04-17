@@ -7,6 +7,25 @@ from torch.utils.data import DataLoader
 
 
 class VariationalAE(nn.Module):
+    def __init__(self, encoder, decoder):
+        super().__init__()
+
+        self.encoder = encoder.to(DEVICE)
+        self.decoder = decoder.to(DEVICE)
+
+    def reparameterize(self, mean, var):
+        epsilon = torch.randn_like(var).to(DEVICE)
+        z = mean + var * epsilon
+        return z
+
+    def forward(self, x):
+        mean, logvar = self.encoder(x)
+        z = self.reparameterize(mean, logvar)
+
+        return self.decoder(z), mean, logvar
+
+
+class VariationalEncoder(nn.Module):
     def __init__(self, input_dim=784, hidden_dim=400, latent_dim=200):
         super().__init__()
 
@@ -20,6 +39,20 @@ class VariationalAE(nn.Module):
         self.mean = nn.Linear(latent_dim, 2)
         self.logvar = nn.Linear(latent_dim, 2)
 
+    def forward(self, x):
+        x = x.view(-1, 28 * 28)
+
+        z = self.encoder(x)
+        mean = self.mean(z)
+        logvar = self.logvar(z)
+
+        return mean, logvar
+
+
+class VariationalDecoder(nn.Module):
+    def __init__(self, input_dim=784, hidden_dim=400, latent_dim=200):
+        super().__init__()
+
         self.decoder = nn.Sequential(
             nn.Linear(2, latent_dim),
             nn.LeakyReLU(0.2),
@@ -29,22 +62,8 @@ class VariationalAE(nn.Module):
             nn.Sigmoid(),
         )
 
-    def encode(self, x):
-        z = self.encoder(x)
-        return self.mean(z), self.logvar(z)
-
-    def reparameterize(self, mean, var):
-        epsilon = torch.randn_like(var).to(DEVICE)
-        z = mean + var * epsilon
-        return z
-
     def forward(self, x):
-        x = x.view(-1, 28 * 28)
-
-        mean, logvar = self.encode(x)
-        z = self.reparameterize(mean, logvar)
-
-        return self.decoder(z).view(-1, 1, 28, 28), mean, logvar
+        return self.decoder(x).view(-1, 1, 28, 28)
 
 
 def vae_loss_fn(target, pred, mean, logvar):

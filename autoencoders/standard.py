@@ -6,110 +6,48 @@ from stacked_mnist import StackedMNISTData
 from torch.utils.data import DataLoader
 
 
-class Encoder(nn.Module):
-    def __init__(self, in_channels=1, out_channels=14, latent_dim=200):
+class StandardAutoencoder(nn.Module):
+    def __init__(self, latent_dim=2):
         super().__init__()
 
-        self.in_channels = in_channels
-
-        self.net = nn.Sequential(
-            nn.Conv2d(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=3,
-                padding=1,
-            ),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=out_channels,
-                out_channels=out_channels,
-                kernel_size=3,
-                padding=1,
-            ),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=out_channels,
-                out_channels=out_channels * 2,
-                kernel_size=3,
-                padding=1,
-                stride=2,
-            ),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=out_channels * 2,
-                out_channels=out_channels * 4,
-                kernel_size=3,
-                padding=1,
-                stride=2,
-            ),
-            nn.ReLU(),
-            nn.Conv2d(
-                in_channels=out_channels * 4,
-                out_channels=out_channels * 4,
-                kernel_size=3,
-                padding=1,
-            ),
-            nn.ReLU(),
-            nn.Flatten(),
-            nn.Linear(7 * 7 * out_channels * 4, latent_dim),
-            nn.ReLU(),
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 32, 3, 1, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(32, 64, 3, 2, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(64, 64, 3, 2, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(64, 64, 3, 1, 1),
+            nn.LeakyReLU(inplace=True),
         )
 
-    def forward(self, x):
-        x = x.view(-1, self.in_channels, 28, 28)
-        return self.net(x)
+        self.encoder_fc = nn.Linear(64 * 7 * 7, latent_dim)
+        self.decoder_fc = nn.Linear(latent_dim, 64 * 7 * 7)
 
-
-class Decoder(nn.Module):
-    def __init__(self, in_channels=1, out_channels=14, latent_dim=200):
-        super().__init__()
-
-        self.out_channels = out_channels
-
-        self.linear = nn.Sequential(
-            nn.Linear(latent_dim, 4 * out_channels * 7 * 7), nn.ReLU()
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(64, 64, 3, 1, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.ConvTranspose2d(64, 64, 3, 2, 1, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.ConvTranspose2d(64, 32, 3, 2, 1, 1),
+            nn.LeakyReLU(inplace=True),
+            nn.ConvTranspose2d(32, 1, 3, 1, 1),
+            nn.Sigmoid(),
         )
 
-        self.conv = nn.Sequential(
-            nn.ConvTranspose2d(4 * out_channels, 4 * out_channels, 3, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(
-                4 * out_channels,
-                2 * out_channels,
-                3,
-                padding=1,
-                stride=2,
-                output_padding=1,
-            ),
-            nn.ReLU(),
-            nn.ConvTranspose2d(2 * out_channels, 2 * out_channels, 3, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(
-                2 * out_channels, out_channels, 3, padding=1, stride=2, output_padding=1
-            ),
-            nn.ReLU(),
-            nn.ConvTranspose2d(out_channels, out_channels, 3, padding=1),
-            nn.ReLU(),
-            nn.ConvTranspose2d(out_channels, in_channels, 3, padding=1),
-        )
-
-    def forward(self, x):
-        x = self.linear(x)
-        x = x.view(-1, 4 * self.out_channels, 7, 7)
-        return self.conv(x)
-
-
-class Autoencoder(nn.Module):
-    def __init__(self, encoder, decoder):
-        super().__init__()
-
-        self.encoder = encoder.to(DEVICE)
-        self.decoder = decoder.to(DEVICE)
-
-    def forward(self, x):
+    def encode(self, x):
         z = self.encoder(x)
-        x = self.decoder(z)
-        return x
+        z = torch.flatten(z, 1)
+        return self.encoder_fc(z)
+
+    def decode(self, z):
+        x = self.decoder_fc(z)
+        x = x.view(-1, 64, 7, 7)
+        return self.decoder(x)
+
+    def forward(self, x):
+        z = self.encode(x)
+        return self.decode(z)
 
 
 def train(model, loader, loss_fn, optimizer):
@@ -165,7 +103,7 @@ if __name__ == "__main__":
     dataset = StackedMNISTData(root="data")
     loader = DataLoader(dataset=dataset, batch_size=1024, shuffle=True)
 
-    model = Autoencoder(encoder=Encoder(), decoder=Decoder()).to(DEVICE)
+    model = StandardAutoencoder().to(DEVICE)
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
