@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 
 class StandardAutoencoder(nn.Module):
-    def __init__(self, latent_dim=2):
+    def __init__(self, latent_dim=20):
         super().__init__()
 
         self.encoder = nn.Sequential(
@@ -58,7 +58,7 @@ def train(model, loader, loss_fn, optimizer):
         image = image.to(DEVICE)
 
         reconstructed = model(image)
-        loss = loss_fn(reconstructed, image)
+        loss = torch.sqrt(loss_fn(reconstructed, image))
 
         loss.backward()
         optimizer.step()
@@ -78,7 +78,7 @@ def test(model, loader, loss_fn):
 
             reconstructed = model(image)
 
-            loss = loss_fn(reconstructed, image)
+            loss = torch.sqrt(loss_fn(reconstructed, image))
             losses.append(loss.item())
 
     return losses

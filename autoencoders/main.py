@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
 from classifier import Classifier
 from config import DEVICE
@@ -78,7 +77,7 @@ def ae_basic():
         train_loader = DataLoader(dataset=train_dataset, batch_size=1024, shuffle=True)
 
         loss_fn = torch.nn.MSELoss()
-        optimizer = torch.optim.Adam(standard.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(standard.parameters(), lr=5e-4)
 
         epochs = 30
 
@@ -96,13 +95,34 @@ def ae_basic():
 
 
 def ae_gen():
-    standard = StandardAutoencoder().to(DEVICE)
-    standard.load_state_dict(torch.load("models/standard_ae.pth"))
-
     latent_dim = 2
+
+    standard = StandardAutoencoder(latent_dim=latent_dim).to(DEVICE)
+    try:
+        standard.load_state_dict(torch.load("models/generator_ae.pth"))
+        print("Pre-trained model found, using it...")
+    except FileNotFoundError:
+        print("No model found, training a new one...")
+
+        train_dataset = StackedMNISTData(root="data", train=True)
+        train_loader = DataLoader(dataset=train_dataset, batch_size=1024, shuffle=True)
+
+        loss_fn = torch.nn.MSELoss()
+        optimizer = torch.optim.Adam(standard.parameters(), lr=5e-4)
+
+        epochs = 30
+
+        for epoch in range(epochs):
+            loss = train(standard, train_loader, loss_fn, optimizer)
+            print(f"Epoch {epoch + 1}/{epochs}, Loss: {sum(loss) / len(loss)}")
+
+        torch.save(standard.state_dict(), "models/generator_ae.pth")
+
     samples = 10
 
-    sampled = np.random.randn(samples, latent_dim) * 0.5 + 0.5
+    sampled = torch.randn((samples, latent_dim))
+
+    print("Generating images from random samples...")
 
     reconstructed = standard.decode(torch.tensor(sampled, dtype=torch.float).to(DEVICE))
 
