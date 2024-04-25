@@ -6,6 +6,7 @@ from stacked_mnist import DataMode, StackedMNISTData
 from standard import (
     StandardAutoencoder,
     get_image_reconstructed,
+    plot_most_anomalous,
     test,
     train,
 )
@@ -65,7 +66,7 @@ def plot_image_reconstructed(images_reconstructed):
 
 
 def ae_basic():
-    standard = StandardAutoencoder().to(DEVICE)
+    standard = StandardAutoencoder(in_channels=1).to(DEVICE)
 
     try:
         standard.load_state_dict(torch.load("models/standard_ae.pth"))
@@ -74,12 +75,12 @@ def ae_basic():
         print("No model found, training a new one...")
 
         train_dataset = StackedMNISTData(root="data", train=True)
-        train_loader = DataLoader(dataset=train_dataset, batch_size=1024, shuffle=True)
+        train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
 
         loss_fn = torch.nn.MSELoss()
         optimizer = torch.optim.Adam(standard.parameters(), lr=5e-4)
 
-        epochs = 30
+        epochs = 10
 
         for epoch in range(epochs):
             loss = train(standard, train_loader, loss_fn, optimizer)
@@ -162,7 +163,7 @@ def ae_anom():
         plt.xlabel("Iterations")
         plt.ylabel("Loss")
 
-        plt.plot(losses[-1000:])
+        plt.plot(losses)
 
         plt.show()
 
@@ -177,9 +178,11 @@ def ae_anom():
         f"Average Reconstruction Loss: {sum(reconstruction_loss) / len(reconstruction_loss)}"
     )
 
+    plot_most_anomalous(standard, test_loader, loss_fn, k)
+
 
 def ae_stack():
-    standard = StandardAutoencoder().to(DEVICE)
+    standard = StandardAutoencoder(in_channels=3).to(DEVICE)
 
     try:
         standard.load_state_dict(torch.load("models/standard_ae_stack.pth"))
@@ -193,7 +196,7 @@ def ae_stack():
         loss_fn = torch.nn.MSELoss()
         optimizer = torch.optim.Adam(standard.parameters(), lr=1e-3)
 
-        epochs = 10
+        epochs = 15
 
         for epoch in range(epochs):
             loss = train(standard, train_loader, loss_fn, optimizer)
@@ -229,8 +232,8 @@ def vae_gen():
 
 if __name__ == "__main__":
     print("Project 3: Autoencoders")
-    # ae_basic()
-    ae_gen()
+    ae_basic()
+    # ae_gen()
     # ae_anom()
     # ae_stack()
     # vae_basic()

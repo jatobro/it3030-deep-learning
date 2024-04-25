@@ -7,47 +7,49 @@ from torch.utils.data import DataLoader
 
 
 class StandardAutoencoder(nn.Module):
-    def __init__(self, latent_dim=20):
+    def __init__(self, in_channels=1, encoder_dim=16):
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Conv2d(1, 32, 3, 1, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.Conv2d(32, 64, 3, 2, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.Conv2d(64, 64, 3, 2, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.Conv2d(64, 64, 3, 1, 1),
-            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(in_channels, 16, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(128 * 2 * 2, 128),
+            nn.ReLU(),
+            nn.Linear(128, encoder_dim),
         )
 
-        self.encoder_fc = nn.Linear(64 * 7 * 7, latent_dim)
-        self.decoder_fc = nn.Linear(latent_dim, 64 * 7 * 7)
-
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(64, 64, 3, 1, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.ConvTranspose2d(64, 64, 3, 2, 1, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.ConvTranspose2d(64, 32, 3, 2, 1, 1),
-            nn.LeakyReLU(inplace=True),
-            nn.ConvTranspose2d(32, 1, 3, 1, 1),
+            nn.Linear(encoder_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 128 * 2 * 2),
+            nn.ReLU(),
+            nn.Unflatten(1, (128, 2, 2)),
+            nn.ConvTranspose2d(
+                128, 64, kernel_size=3, stride=2, padding=1, output_padding=1
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                32, 16, kernel_size=3, stride=2, padding=1, output_padding=1
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                16, in_channels, kernel_size=3, stride=2, padding=1, output_padding=1
+            ),
             nn.Sigmoid(),
         )
 
-    def encode(self, x):
-        z = self.encoder(x)
-        z = torch.flatten(z, 1)
-        return self.encoder_fc(z)
-
-    def decode(self, z):
-        x = self.decoder_fc(z)
-        x = x.view(-1, 64, 7, 7)
-        return self.decoder(x)
-
     def forward(self, x):
-        z = self.encode(x)
-        return self.decode(z)
+        z = self.encoder(x)
+        return self.decoder(z)
 
 
 def train(model, loader, loss_fn, optimizer):
@@ -82,6 +84,36 @@ def test(model, loader, loss_fn):
             losses.append(loss.item())
 
     return losses
+
+
+def plot_most_anomalous(model, loader, loss_fn, k):
+    most_anomalous = []
+
+    model.eval()
+    with torch.no_grad():
+        for image, _ in loader:
+            image = image.to(DEVICE)
+
+            reconstructed = model(image)
+
+            loss = torch.sqrt(loss_fn(reconstructed, image))
+
+            if len(most_anomalous) < k:
+                most_anomalous.append((loss, reconstructed))
+            else:
+                max_loss = max(most_anomalous, key=lambda x: x[0])[0]
+
+                if loss < max_loss:
+                    index = most_anomalous.index((max_loss, _))
+                    most_anomalous[index] = (loss, reconstructed)
+
+    for loss, reconstructed in most_anomalous:
+        reconstructed = reconstructed.view(-1, 28, 28)
+
+        plt.figure()
+        plt.imshow(reconstructed[0].cpu().numpy())
+        plt.title("Most anomalous")
+        plt.show()
 
 
 def get_image_reconstructed(model, loader):
